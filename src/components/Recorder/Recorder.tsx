@@ -2,6 +2,10 @@ import { useRef, useState } from "react";
 import { AudioRecorder } from "../../audio/recorder";
 import "./Recorder.css";
 
+import { decodeAudioBlob } from "../../audio/decode";
+import { toMono, resampleLinear } from "../../audio/resample";
+import { normalizeAudio } from "../../audio/normalize";
+
 export default function Recorder() {
   const recorderRef = useRef<AudioRecorder | null>(null);
 
@@ -37,6 +41,25 @@ export default function Recorder() {
       }
 
       const blob = await recorderRef.current.stop();
+      const audioBuffer = await decodeAudioBlob(blob);
+
+    	const mono = toMono(audioBuffer);
+
+      const resampled = resampleLinear(
+			mono,
+			audioBuffer.sampleRate,
+			16000,
+			);
+
+			const normalized = normalizeAudio(resampled);
+
+			console.log({
+			originalSampleRate: audioBuffer.sampleRate,
+			targetSampleRate: 16000,
+			samples: normalized.length,
+			durationSeconds: normalized.length / 16000,
+			firstSamples: Array.from(normalized.slice(0, 10)),
+			});
       const url = URL.createObjectURL(blob);
 
       setAudioUrl(url);
