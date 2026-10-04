@@ -1,10 +1,10 @@
 import { useRef, useState } from "react";
 import { AudioRecorder } from "../../audio/recorder";
-import "./Recorder.css";
-
+import "./Recorder.css"
 import { decodeAudioBlob } from "../../audio/decode";
 import { toMono, resampleLinear } from "../../audio/resample";
 import { normalizeAudio } from "../../audio/normalize";
+import { pronunciationModel } from "../../inference/model";
 
 export default function Recorder() {
   const recorderRef = useRef<AudioRecorder | null>(null);
@@ -52,6 +52,32 @@ export default function Recorder() {
 			);
 
 			const normalized = normalizeAudio(resampled);
+			if (pronunciationModel.status === "unloaded") {
+				console.log("Loading pronunciation model...");
+				await pronunciationModel.load();
+				console.log(
+					`Pronunciation model ready using ${pronunciationModel.backend}`,
+				);
+			}
+
+			console.time("phoneme-inference");
+
+			const inference = await pronunciationModel.infer(normalized);
+
+			console.timeEnd("phoneme-inference");
+
+			console.log({
+				backend: pronunciationModel.backend,
+				frameCount: inference.frameCount,
+				vocabularySize: inference.vocabularySize,
+				frameDurationMs: inference.frameDurationMs,
+				vocabulary: inference.vocabulary,
+			});
+
+			console.log(
+				"First logits:",
+				Array.from(inference.logits.slice(0, 30)),
+			);
 
 			console.log({
 			originalSampleRate: audioBuffer.sampleRate,
