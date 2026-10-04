@@ -1,0 +1,30 @@
+.recorder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 4rem 1rem;
+}
+
+.target-word {
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 1rem 0;
+}
+
+button {
+  font: inherit;
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+}
+
+.playback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.error {
+  color: red;
+}
